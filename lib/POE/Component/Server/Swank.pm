@@ -3,6 +3,8 @@ use strict;
 
 our $VERSION = '0.01';
 
+1;
+
 __END__
 
 =head1 NAME
