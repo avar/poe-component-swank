@@ -1,6 +1,8 @@
 package POE::Component::Server::Swank;
 use strict;
 
+our $VERSION = '0.01';
+
 __END__
 
 =head1 NAME
