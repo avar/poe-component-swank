@@ -1,7 +1,75 @@
 package POE::Component::Server::Swank;
 use strict;
+use warnings;
 
 our $VERSION = '0.01';
+
+sub BINDADDR () { '127.0.0.1' }
+sub BINDPORT () { 4005 }
+
+use Params::Validate qw[validate_with];
+use POE qw[
+    Component::Server::TCP
+    Filter::Swank
+];
+
+sub spawn {
+    my $pkg = shift;
+
+	my %args = validate_with(
+		params => \@_,
+		spec => {
+			InputState   => {
+				type     => &Params::Validate::CODEREF,
+				optional => 1,
+				default  => sub {},
+			},
+			ErrorState   => {
+				type     => &Params::Validate::CODEREF,
+				optional => 1,
+				default  => sub {},
+			},
+			BindAddress  => {
+				type     => &Params::Validate::SCALAR,
+				optional => 1,
+				default  => BINDADDR,
+			},
+			BindPort     => {
+				type     => &Params::Validate::SCALAR,
+				optional => 1,
+				default  => BINDPORT,
+			},
+		},
+	);
+
+    $args{filter} = POE::Filter::Swank->new();
+
+	my $session = POE::Session->create(
+		inline_states => {
+			_start         => \&start,
+			_stop          => \&stop,
+
+			socket_connect => \&socket_connect,
+			socket_error   => \&socket_error,
+			socket_input   => \&socket_input,
+			register	   => \&register,
+			unregister	   => \&unregister,
+			shutdown       => \&shutdown,
+
+			client_input => $args{InputState},
+			client_error => $args{ErrorState},
+
+		},
+		heap => \%args,
+	);
+
+
+	return $session;
+}
+
+sub start {}
+sub stop {}
+
 
 1;
 
